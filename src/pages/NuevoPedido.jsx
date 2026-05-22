@@ -82,6 +82,10 @@ export default function NuevoPedido() {
         setMarcas(marcasSnap.docs.map(d => d.data().nombre))
         setTipos(tiposSnap.docs.map(d => d.data().nombre))
         setTrm(trmResult.valor)
+        // Precargar TRM en el primer producto si no viene de la Calculadora
+        if (!datosCalculadora) {
+          setValue('productos.0.trm', trmResult.valor)
+        }
       } catch (_) {}
     }
     cargar()
@@ -98,6 +102,9 @@ export default function NuevoPedido() {
     setValue('productos.0.trm', datosCalculadora.trm)
     setValue('productos.0.envioColombia', datosCalculadora.envioColombia)
     setValue('productos.0.elBagre', datosCalculadora.elBagre)
+    if (datosCalculadora.precioVentaCOP) {
+      setValue('productos.0.precioVentaCOP', datosCalculadora.precioVentaCOP)
+    }
   }, [datosCalculadora, setValue])
 
   // Buscar clientes

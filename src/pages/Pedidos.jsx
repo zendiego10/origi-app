@@ -94,7 +94,7 @@ export default function Pedidos() {
             <p className="text-muted-foreground text-sm">No hay pedidos</p>
             <button
               onClick={() => navigate('/pedidos/nuevo')}
-              className="mt-4 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-[#C73652] transition-colors"
+              className="mt-4 mx-auto block px-6 py-2.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-[#C73652] transition-colors"
             >
               Crear primer pedido
             </button>

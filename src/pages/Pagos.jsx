@@ -216,15 +216,20 @@ function PanelDetallePago({ pedido, onClose, onRegistrarPago }) {
   async function cargarHistorial() {
     setLoadingHistorial(true)
     try {
+      // Filtramos solo por pedidoId (sin orderBy para no requerir índice compuesto)
+      // y ordenamos en el cliente por fecha descendente
       const snap = await getDocs(
-        query(
-          collection(db, 'pagos'),
-          where('pedidoId', '==', pedido.id),
-          orderBy('fecha', 'desc')
-        )
+        query(collection(db, 'pagos'), where('pedidoId', '==', pedido.id))
       )
-      setHistorial(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-    } catch (_) {
+      const pagos = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          const fa = a.fecha?.toDate?.() || new Date(0)
+          const fb = b.fecha?.toDate?.() || new Date(0)
+          return fb - fa
+        })
+      setHistorial(pagos)
+    } catch (err) {
       setHistorial([])
     } finally {
       setLoadingHistorial(false)

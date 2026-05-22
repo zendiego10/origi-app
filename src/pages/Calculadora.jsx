@@ -4,8 +4,8 @@ import { useForm } from 'react-hook-form'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, RotateCcw, Pencil, Info, RefreshCw } from 'lucide-react'
 import TopBar from '@/components/layout/TopBar'
-import { calcularCosto } from '@/utils/calculadora'
-import { formatCOP, formatUSD } from '@/utils/formatters'
+import { calcularCosto, calcularGanancia } from '@/utils/calculadora'
+import { formatCOP, formatUSD, formatPct, getColorMargen } from '@/utils/formatters'
 import { ENVIO_COLOMBIA_DEFAULT, ENVIO_EL_BAGRE } from '@/utils/constants'
 import { useCalculadoraStore } from '@/store/calculadoraStore'
 import { obtenerTRM } from '@/utils/trm'
@@ -18,6 +18,7 @@ export default function Calculadora() {
   const [trmConfig, setTrmConfig] = useState(4200)
   const [trmFuente, setTrmFuente] = useState('')
   const [cargandoTRM, setCargandoTRM] = useState(false)
+  const [precioVenta, setPrecioVenta] = useState('')
 
   const { register, watch, setValue, reset } = useForm({
     defaultValues: {
@@ -70,6 +71,7 @@ export default function Calculadora() {
     reset({ precioUSD: '', tieneEnvioUSA: false, envioUSA: '', trm: trmConfig, envioColombia: ENVIO_COLOMBIA_DEFAULT, elBagre: false })
     setResultado(null)
     setEnvioEditando(false)
+    setPrecioVenta('')
   }
 
   function handleCrearPedido() {
@@ -81,6 +83,7 @@ export default function Calculadora() {
       envioColombia: Number(valores.envioColombia),
       elBagre: valores.elBagre,
       costoTotalCOP: resultado.costoTotalCOP,
+      precioVentaCOP: Number(precioVenta) || 0,
     })
     navigate('/pedidos/nuevo')
   }
@@ -288,6 +291,45 @@ export default function Calculadora() {
                     {formatCOP(resultado.costoTotalCOP)}
                   </span>
                 </div>
+              </div>
+
+              {/* Precio de venta + ganancia + margen */}
+              <div className="border-t border-border pt-3 mt-2 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Precio de venta
+                </p>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={precioVenta}
+                    onChange={e => setPrecioVenta(e.target.value)}
+                    placeholder="0"
+                    className="w-full pl-7 pr-3 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
+                  />
+                </div>
+                {(() => {
+                  const venta = Number(precioVenta)
+                  if (!venta || venta <= 0) return null
+                  const { gananciaCOP, margen } = calcularGanancia(venta, resultado.costoTotalCOP)
+                  return (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-secondary rounded-lg px-3 py-2.5 text-center">
+                        <p className="text-xs text-muted-foreground">Ganancia</p>
+                        <p className={`text-base font-bold mt-0.5 ${getColorMargen(margen)}`}>
+                          {formatCOP(gananciaCOP)}
+                        </p>
+                      </div>
+                      <div className="bg-secondary rounded-lg px-3 py-2.5 text-center">
+                        <p className="text-xs text-muted-foreground">Margen</p>
+                        <p className={`text-base font-bold mt-0.5 ${getColorMargen(margen)}`}>
+                          {formatPct(margen)}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             </motion.div>
           )}
