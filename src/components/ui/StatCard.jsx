@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { CARD_TAP, CARD_HOVER } from '@/utils/animations'
 
 export default function StatCard({ icon: Icon, label, value, sub, trend, color = 'primary', loading }) {
   const colorMap = {
@@ -8,14 +9,13 @@ export default function StatCard({ icon: Icon, label, value, sub, trend, color =
     warning: 'text-yellow-400 bg-yellow-400/10',
     info: 'text-blue-400 bg-blue-400/10',
     danger: 'text-red-400 bg-red-400/10',
+    accent: 'text-purple-400 bg-purple-400/10',
   }
 
   if (loading) {
     return (
       <div className="bg-card border border-border rounded-xl p-4 animate-pulse">
-        <div className="flex items-start justify-between">
-          <div className="w-10 h-10 rounded-lg bg-secondary" />
-        </div>
+        <div className="w-10 h-10 rounded-lg bg-secondary" />
         <div className="mt-4 space-y-2">
           <div className="h-3 w-20 bg-secondary rounded" />
           <div className="h-6 w-32 bg-secondary rounded" />
@@ -27,8 +27,8 @@ export default function StatCard({ icon: Icon, label, value, sub, trend, color =
   return (
     <motion.div
       className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3"
-      whileHover={{ scale: 1.01 }}
-      transition={{ duration: 0.15 }}
+      whileHover={CARD_HOVER}
+      whileTap={CARD_TAP}
     >
       <div className="flex items-start justify-between">
         <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', colorMap[color])}>

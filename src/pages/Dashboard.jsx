@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { LIST_CONTAINER, ITEM_VARIANT, CARD_TAP, CARD_HOVER } from '@/utils/animations'
 import {
   DollarSign, TrendingUp, ShoppingBag, AlertTriangle,
   Clock, Package, CheckCircle, CreditCard,
@@ -19,10 +20,6 @@ import Badge from '@/components/ui/Badge'
 import { formatCOP, formatDate, diasDesde } from '@/utils/formatters'
 import { ESTADOS_PEDIDO, DIAS_ALERTA_RETRASO } from '@/utils/constants'
 
-const stagger = {
-  container: { animate: { transition: { staggerChildren: 0.06 } } },
-  item: { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0, transition: { duration: 0.25 } } },
-}
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -118,34 +115,39 @@ export default function Dashboard() {
     <div className="flex flex-col min-h-full">
       <TopBar title="Dashboard" />
 
-      <div className="flex-1 p-4 space-y-5">
+      <motion.div
+        variants={LIST_CONTAINER}
+        initial="initial"
+        animate="enter"
+        className="flex-1 p-4 space-y-5"
+      >
         {/* Métricas financieras */}
-        <motion.div variants={stagger.container} initial="initial" animate="animate" className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { icon: DollarSign, label: 'Ventas del mes', value: formatCOP(stats.ventasMes), color: 'primary' },
             { icon: TrendingUp, label: 'Ganancia del mes', value: formatCOP(stats.gananciaMes), color: 'success' },
             { icon: TrendingUp, label: 'Margen promedio', value: `${Math.round(stats.margenMes * 100)}%`, color: 'info' },
             { icon: CreditCard, label: 'Saldo por cobrar', value: formatCOP(stats.cartera), color: 'warning' },
           ].map((card, i) => (
-            <motion.div key={i} variants={stagger.item}>
+            <motion.div key={i} variants={ITEM_VARIANT}>
               <StatCard {...card} loading={loading} />
             </motion.div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Estado operativo */}
-        <motion.div variants={stagger.container} initial="initial" animate="animate" className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {[
             { icon: Clock, label: 'Pedidos activos', value: stats.activos, color: 'info' },
             { icon: Package, label: 'En Colombia', value: stats.enColombia, color: 'accent' },
             { icon: AlertTriangle, label: 'Retrasados', value: stats.retrasados, color: 'danger' },
             { icon: CheckCircle, label: 'Entregados (mes)', value: stats.entregadosMes, color: 'success' },
           ].map((card, i) => (
-            <motion.div key={i} variants={stagger.item}>
+            <motion.div key={i} variants={ITEM_VARIANT}>
               <StatCard {...card} loading={loading} />
             </motion.div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Gráfico de barras — 6 meses */}
         <div className="bg-card border border-border rounded-xl p-4">
@@ -230,7 +232,7 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }

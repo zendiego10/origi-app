@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { LIST_CONTAINER, ITEM_VARIANT, CARD_TAP, CARD_HOVER, BUTTON_TAP } from '@/utils/animations'
 import { Plus, Search, ShoppingBag } from 'lucide-react'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { db } from '@/services/firebase'
@@ -100,8 +101,13 @@ export default function Pedidos() {
             </button>
           </div>
         ) : (
-          <div className="space-y-2">
-            {pedidosFiltrados.map((pedido, i) => {
+          <motion.div
+            variants={LIST_CONTAINER}
+            initial="initial"
+            animate="enter"
+            className="space-y-2"
+          >
+            {pedidosFiltrados.map((pedido) => {
               const estado = ESTADOS_PEDIDO[pedido.estado]
               const diasSinAvanzar = diasDesde(pedido.actualizadoEn || pedido.creadoEn)
               const retrasado = ['en_proceso', 'en_colombia'].includes(pedido.estado) && diasSinAvanzar > DIAS_ALERTA_RETRASO
@@ -109,11 +115,11 @@ export default function Pedidos() {
               return (
                 <motion.button
                   key={pedido.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04 }}
+                  variants={ITEM_VARIANT}
+                  whileTap={CARD_TAP}
+                  whileHover={CARD_HOVER}
                   onClick={() => navigate(`/pedidos/${pedido.id}`)}
-                  className="w-full bg-card border border-border rounded-xl p-4 text-left hover:border-primary/40 transition-colors"
+                  className="w-full bg-card border border-border rounded-xl p-4 text-left"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
@@ -133,17 +139,18 @@ export default function Pedidos() {
                 </motion.button>
               )
             })}
-          </div>
+          </motion.div>
         )}
       </div>
 
       {/* FAB móvil */}
-      <button
+      <motion.button
         onClick={() => navigate('/pedidos/nuevo')}
-        className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-primary hover:bg-[#C73652] text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-colors z-50"
+        whileTap={BUTTON_TAP}
+        className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center z-50"
       >
         <Plus size={24} />
-      </button>
+      </motion.button>
     </div>
   )
 }

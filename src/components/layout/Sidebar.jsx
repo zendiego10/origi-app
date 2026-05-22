@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { BUTTON_TAP } from '@/utils/animations'
 import {
   LayoutDashboard, Calculator, ShoppingBag,
   Package, CreditCard, TrendingUp, LogOut, Users,
@@ -73,13 +74,14 @@ export default function Sidebar() {
 
       {/* Logout */}
       <div className="px-3 py-4 border-t border-border">
-        <button
+        <motion.button
           onClick={handleLogout}
+          whileTap={BUTTON_TAP}
           className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-muted-foreground hover:text-red-400 hover:bg-secondary transition-colors"
         >
           <LogOut size={18} />
           <span>Cerrar sesión</span>
-        </button>
+        </motion.button>
       </div>
     </aside>
   )
