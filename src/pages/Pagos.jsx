@@ -45,7 +45,12 @@ export default function Pagos() {
         query(collection(db, 'pedidos'), orderBy('creadoEn', 'desc'))
       )
       const todos = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      setPedidos(todos.filter(p => p.estado === 'entregado' || (p.anticipoPagado || 0) > 0))
+      // Mostrar todo pedido que tenga saldo pendiente > 0 O que ya fue pagado completamente
+      setPedidos(todos.filter(p =>
+        (p.saldoPendiente || 0) > 0 ||
+        (p.anticipoPagado || 0) > 0 ||
+        p.estado === 'entregado'
+      ))
     } catch (_) {}
     finally { setLoading(false) }
   }

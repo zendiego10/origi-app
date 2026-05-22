@@ -293,24 +293,24 @@ export default function Calculadora() {
           )}
         </AnimatePresence>
 
-        {/* Botones */}
-        <div className="flex gap-3 pt-2">
-          <button
-            type="button"
-            onClick={handleLimpiar}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary hover:bg-border text-foreground font-medium rounded-lg transition-colors text-sm"
-          >
-            <RotateCcw size={15} />
-            Limpiar
-          </button>
+        {/* Botones — Crear pedido primero (más importante), Limpiar secundario */}
+        <div className="flex flex-col gap-2 pt-2">
           <button
             type="button"
             onClick={handleCrearPedido}
             disabled={!resultado}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-[#C73652] disabled:opacity-40 text-white font-medium rounded-lg transition-colors text-sm"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-primary hover:bg-[#C73652] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
           >
-            Crear pedido
-            <ChevronRight size={15} />
+            Crear pedido con estos datos
+            <ChevronRight size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={handleLimpiar}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary hover:bg-border text-muted-foreground hover:text-foreground font-medium rounded-xl transition-colors text-sm"
+          >
+            <RotateCcw size={14} />
+            Limpiar campos
           </button>
         </div>
       </div>
