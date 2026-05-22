@@ -30,13 +30,26 @@ export default function Pedidos() {
     cargar()
   }, [])
 
-  const pedidosFiltrados = pedidos.filter(p => {
+  // Prioridad: pendiente > en_proceso > en_colombia > entregado > cancelado
+  const PRIORIDAD = { pendiente: 0, en_proceso: 1, en_colombia: 2, entregado: 3, cancelado: 4 }
+
+  const pedidosFiltrados = pedidos
+    .filter(p => {
     const matchFiltro = filtro === 'todos' || p.estado === filtro
     const matchBusqueda = !busqueda ||
       p.clienteNombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
       p.codigo?.toLowerCase().includes(busqueda.toLowerCase())
     return matchFiltro && matchBusqueda
   })
+    .sort((a, b) => {
+      const pa = PRIORIDAD[a.estado] ?? 9
+      const pb = PRIORIDAD[b.estado] ?? 9
+      if (pa !== pb) return pa - pb
+      // Mismo estado → más reciente primero
+      const fa = a.creadoEn?.toDate?.() || new Date(a.creadoEn)
+      const fb = b.creadoEn?.toDate?.() || new Date(b.creadoEn)
+      return fb - fa
+    })
 
   return (
     <div className="flex flex-col min-h-full">

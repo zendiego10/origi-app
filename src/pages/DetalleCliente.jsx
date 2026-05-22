@@ -64,8 +64,9 @@ export default function DetalleCliente() {
     </div>
   )
 
-  const totalComprado = pedidos.filter(p => p.estado === 'entregado').reduce((s, p) => s + (p.totalCOP || 0), 0)
-  const gananciaTotal = pedidos.filter(p => p.estado === 'entregado').reduce((s, p) => s + (p.gananciaTotal || 0), 0)
+  const totalComprado = pedidos.filter(p => p.estado !== 'cancelado').reduce((s, p) => s + (p.totalCOP || 0), 0)
+  const gananciaTotal = pedidos.filter(p => p.estado !== 'cancelado').reduce((s, p) => s + (p.gananciaTotal || 0), 0)
+  const saldoTotal = pedidos.reduce((s, p) => s + (p.saldoPendiente || 0), 0)
   const waLink = `https://wa.me/${(cliente.telefono || '').replace(/\D/g, '')}`
   const etiqueta = ETIQUETAS_CLIENTE[cliente.etiqueta]
 
@@ -107,15 +108,16 @@ export default function DetalleCliente() {
         </div>
 
         {/* Estadísticas */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {[
-            { label: 'Pedidos', value: pedidos.length },
-            { label: 'Total comprado', value: formatCOP(totalComprado) },
-            { label: 'Ganancia generada', value: formatCOP(gananciaTotal) },
-          ].map(({ label, value }) => (
+            { label: 'Pedidos', value: pedidos.length, color: '' },
+            { label: 'Total comprado', value: formatCOP(totalComprado), color: '' },
+            { label: 'Ganancia generada', value: formatCOP(gananciaTotal), color: 'text-green-400' },
+            { label: 'Saldo pendiente', value: formatCOP(saldoTotal), color: saldoTotal > 0 ? 'text-yellow-400' : 'text-green-400' },
+          ].map(({ label, value, color }) => (
             <div key={label} className="bg-card border border-border rounded-xl p-3 text-center">
-              <p className="text-sm font-bold text-foreground">{value}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+              <p className={`text-sm font-bold mt-0.5 ${color || 'text-foreground'}`}>{value}</p>
+              <p className="text-xs text-muted-foreground">{label}</p>
             </div>
           ))}
         </div>

@@ -85,13 +85,11 @@ export const spring = {
 export const pageVariants = {
   initial: {
     opacity: 0,
-    y: 10,
-    filter: 'blur(2px)',
+    y: 8,
   },
   enter: {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
     transition: {
       duration: dur.normal,
       ease: ease.outExpo,
@@ -102,8 +100,7 @@ export const pageVariants = {
   },
   exit: {
     opacity: 0,
-    y: -6,
-    filter: 'blur(1px)',
+    y: -4,
     transition: {
       duration: dur.fast,
       ease: ease.inQuart,

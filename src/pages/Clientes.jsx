@@ -27,11 +27,18 @@ export default function Clientes() {
         const todosLosPedidos = pedidosSnap.docs.map(d => ({ id: d.id, ...d.data() }))
         const todosLosClientes = clientesSnap.docs.map(d => {
           const data = { id: d.id, ...d.data() }
-          const pedidosCliente = todosLosPedidos.filter(p => p.clienteId === d.id)
+          // Buscar pedidos por clienteId O por nombre (fallback para pedidos sin ID vinculado)
+          const pedidosCliente = todosLosPedidos.filter(p =>
+            p.clienteId === d.id ||
+            (!p.clienteId && p.clienteNombre === data.nombre)
+          )
+          // Total comprado = suma de TODOS los pedidos no cancelados (no solo entregados)
           const totalComprado = pedidosCliente
-            .filter(p => p.estado === 'entregado')
+            .filter(p => p.estado !== 'cancelado')
             .reduce((s, p) => s + (p.totalCOP || 0), 0)
-          return { ...data, pedidosCount: pedidosCliente.length, totalComprado }
+          const saldoTotal = pedidosCliente
+            .reduce((s, p) => s + (p.saldoPendiente || 0), 0)
+          return { ...data, pedidosCount: pedidosCliente.length, totalComprado, saldoTotal }
         })
         setClientes(todosLosClientes)
         setPedidos(todosLosPedidos)
@@ -111,7 +118,7 @@ export default function Clientes() {
                         {etiqueta && <Badge variant={etiqueta.color}>{etiqueta.label}</Badge>}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">{cliente.telefono}</p>
-                      <div className="flex gap-4 mt-2">
+                      <div className="flex gap-4 mt-2 flex-wrap">
                         <div>
                           <p className="text-xs text-muted-foreground">Pedidos</p>
                           <p className="text-sm font-medium text-foreground">{cliente.pedidosCount}</p>
@@ -120,12 +127,12 @@ export default function Clientes() {
                           <p className="text-xs text-muted-foreground">Total comprado</p>
                           <p className="text-sm font-semibold text-foreground">{formatCOP(cliente.totalComprado)}</p>
                         </div>
-                        {cliente.creadoEn && (
-                          <div>
-                            <p className="text-xs text-muted-foreground">Cliente desde</p>
-                            <p className="text-xs text-muted-foreground">{formatDate(cliente.creadoEn)}</p>
-                          </div>
-                        )}
+                        <div>
+                          <p className="text-xs text-muted-foreground">Saldo pendiente</p>
+                          <p className={`text-sm font-semibold ${(cliente.saldoTotal || 0) > 0 ? 'text-yellow-400' : 'text-green-400'}`}>
+                            {formatCOP(cliente.saldoTotal || 0)}
+                          </p>
+                        </div>
                       </div>
                     </div>
 

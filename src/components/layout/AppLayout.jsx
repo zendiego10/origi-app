@@ -19,8 +19,7 @@ export default function AppLayout() {
             initial="initial"
             animate="enter"
             exit="exit"
-            // will-change optimiza el compositing en GPU
-            style={{ willChange: 'opacity, transform, filter' }}
+            style={{ willChange: 'opacity, transform' }}
             className="flex-1 flex flex-col pb-16 md:pb-0 w-full"
           >
             <Outlet />

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { motion, AnimatePresence } from 'motion/react'
-import { ChevronRight, RotateCcw, Pencil, Info, RefreshCw } from 'lucide-react'
+import { ChevronRight, Pencil, Info, RefreshCw } from 'lucide-react'
 import TopBar from '@/components/layout/TopBar'
 import { calcularCosto, calcularGanancia } from '@/utils/calculadora'
 import { formatCOP, formatUSD, formatPct, getColorMargen } from '@/utils/formatters'
@@ -66,13 +66,6 @@ export default function Calculadora() {
       setResultado(null)
     }
   }, [valores, trmConfig])
-
-  function handleLimpiar() {
-    reset({ precioUSD: '', tieneEnvioUSA: false, envioUSA: '', trm: trmConfig, envioColombia: ENVIO_COLOMBIA_DEFAULT, elBagre: false })
-    setResultado(null)
-    setEnvioEditando(false)
-    setPrecioVenta('')
-  }
 
   function handleCrearPedido() {
     if (!resultado) return
@@ -335,24 +328,23 @@ export default function Calculadora() {
           )}
         </AnimatePresence>
 
-        {/* Botones — Crear pedido primero (más importante), Limpiar secundario */}
-        <div className="flex flex-col gap-2 pt-2">
+        {/* Botones */}
+        <div className="flex gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="flex-shrink-0 px-4 py-3 bg-secondary hover:bg-border text-muted-foreground hover:text-foreground font-medium rounded-xl transition-colors text-sm"
+          >
+            Cancelar
+          </button>
           <button
             type="button"
             onClick={handleCrearPedido}
             disabled={!resultado}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-primary hover:bg-[#C73652] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-[#C73652] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
           >
-            Crear pedido con estos datos
+            Crear pedido
             <ChevronRight size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={handleLimpiar}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary hover:bg-border text-muted-foreground hover:text-foreground font-medium rounded-xl transition-colors text-sm"
-          >
-            <RotateCcw size={14} />
-            Limpiar campos
           </button>
         </div>
       </div>

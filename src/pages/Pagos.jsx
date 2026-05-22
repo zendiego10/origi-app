@@ -94,7 +94,11 @@ export default function Pagos() {
 
   const totalCartera = pedidos.reduce((s, p) => s + (p.saldoPendiente || 0), 0)
   const totalVencido = pedidos.filter(p => getEstadoPago(p) === 'vencido').reduce((s, p) => s + (p.saldoPendiente || 0), 0)
-  const totalCobrado = pedidos.filter(p => getEstadoPago(p) === 'pagado').reduce((s, p) => s + (p.totalCOP || 0), 0)
+  // Cobrado = lo que ya pagaron completamente + los anticipos de pedidos pendientes
+  const totalCobrado = pedidos.reduce((s, p) => {
+    const pagado = (p.totalCOP || 0) - (p.saldoPendiente || 0)
+    return s + Math.max(0, pagado)
+  }, 0)
 
   return (
     <div className="flex flex-col min-h-full">
