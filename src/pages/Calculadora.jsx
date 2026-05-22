@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Calculator, ChevronRight, RotateCcw, Pencil, Info } from 'lucide-react'
+import { ChevronRight, RotateCcw, Pencil, Info, RefreshCw } from 'lucide-react'
 import TopBar from '@/components/layout/TopBar'
 import { calcularCosto } from '@/utils/calculadora'
 import { formatCOP, formatUSD } from '@/utils/formatters'
 import { ENVIO_COLOMBIA_DEFAULT, ENVIO_EL_BAGRE } from '@/utils/constants'
 import { useCalculadoraStore } from '@/store/calculadoraStore'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '@/services/firebase'
+import { obtenerTRM } from '@/utils/trm'
 
 export default function Calculadora() {
   const navigate = useNavigate()
@@ -17,8 +16,10 @@ export default function Calculadora() {
   const [envioEditando, setEnvioEditando] = useState(false)
   const [resultado, setResultado] = useState(null)
   const [trmConfig, setTrmConfig] = useState(4200)
+  const [trmFuente, setTrmFuente] = useState('')
+  const [cargandoTRM, setCargandoTRM] = useState(false)
 
-  const { register, watch, setValue, reset, handleSubmit } = useForm({
+  const { register, watch, setValue, reset } = useForm({
     defaultValues: {
       precioUSD: '',
       tieneEnvioUSA: false,
@@ -31,18 +32,22 @@ export default function Calculadora() {
 
   const valores = watch()
 
-  // Cargar TRM desde Firebase config
+  // Obtener TRM automáticamente al cargar
   useEffect(() => {
-    getDoc(doc(db, 'config', 'trm_actual'))
-      .then(snap => {
-        if (snap.exists()) {
-          const trm = Number(snap.data().valor)
-          setTrmConfig(trm)
-          setValue('trm', trm)
-        }
-      })
-      .catch(() => {}) // Si falla, usa el default
-  }, [setValue])
+    cargarTRM()
+  }, [])
+
+  async function cargarTRM() {
+    setCargandoTRM(true)
+    try {
+      const { valor, fuente } = await obtenerTRM()
+      setTrmConfig(valor)
+      setValue('trm', valor)
+      setTrmFuente(fuente)
+    } finally {
+      setCargandoTRM(false)
+    }
+  }
 
   // Calcular en tiempo real
   useEffect(() => {
@@ -156,8 +161,27 @@ export default function Calculadora() {
 
         {/* TRM */}
         <div className="bg-card border border-border rounded-xl p-4">
-          <Label>TRM del día (COP por USD)</Label>
-          <div className="relative mt-2">
+          <div className="flex items-center justify-between mb-2">
+            <Label>TRM del día (COP por USD)</Label>
+            <div className="flex items-center gap-2">
+              {trmFuente === 'api' && (
+                <span className="text-xs text-green-400 font-medium">● Actualizada</span>
+              )}
+              {trmFuente === 'cache' && (
+                <span className="text-xs text-yellow-400 font-medium">● En caché</span>
+              )}
+              <button
+                type="button"
+                onClick={cargarTRM}
+                disabled={cargandoTRM}
+                className="text-muted-foreground hover:text-primary transition-colors disabled:opacity-40"
+                title="Actualizar TRM"
+              >
+                <RefreshCw size={13} className={cargandoTRM ? 'animate-spin' : ''} />
+              </button>
+            </div>
+          </div>
+          <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
             <input
               {...register('trm')}
@@ -166,6 +190,7 @@ export default function Calculadora() {
               className="w-full pl-7 pr-3 py-2.5 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
             />
           </div>
+          <p className="text-xs text-muted-foreground mt-1">Editable manualmente si necesitas ajustar</p>
         </div>
 
         {/* Envío a Colombia */}

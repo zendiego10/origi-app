@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Trash2, ChevronDown, ChevronUp, Search } from 'lucide-react'
-import { collection, addDoc, getDocs, query, where, serverTimestamp, doc, getDoc } from 'firebase/firestore'
+import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/services/firebase'
 import toast from 'react-hot-toast'
 import TopBar from '@/components/layout/TopBar'
@@ -13,6 +13,7 @@ import { calcularCosto, calcularGanancia, calcularResumenPedido } from '@/utils/
 import { formatCOP, formatPct, getColorMargen } from '@/utils/formatters'
 import { ENVIO_COLOMBIA_DEFAULT, TAXES_USA } from '@/utils/constants'
 import { useCalculadoraStore } from '@/store/calculadoraStore'
+import { obtenerTRM } from '@/utils/trm'
 import { Spinner } from '@/components/ui/Loader'
 
 const productoSchema = z.object({
@@ -69,18 +70,20 @@ export default function NuevoPedido() {
   const { fields, append, remove } = useFieldArray({ control, name: 'productos' })
   const valores = watch()
 
-  // Cargar config y catálogos
+  // Cargar catálogos y TRM automática
   useEffect(() => {
     async function cargar() {
       try {
-        const [marcasSnap, tiposSnap, trmDoc] = await Promise.all([
+        const [marcasSnap, tiposSnap, trmResult] = await Promise.all([
           getDocs(collection(db, 'marcas')),
           getDocs(collection(db, 'tiposProducto')),
-          getDoc(doc(db, 'config', 'trm_actual')),
+          obtenerTRM(),
         ])
         setMarcas(marcasSnap.docs.map(d => d.data().nombre))
         setTipos(tiposSnap.docs.map(d => d.data().nombre))
-        if (trmDoc.exists()) setTrm(Number(trmDoc.data().valor))
+        if (!datosCalculadora) {
+          setTrm(trmResult.valor)
+        }
       } catch (_) {}
     }
     cargar()

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MessageCircle, ShoppingBag } from 'lucide-react'
-import { doc, getDoc, collection, getDocs, query, where, updateDoc } from 'firebase/firestore'
+import { MessageCircle, ShoppingBag, Trash2 } from 'lucide-react'
+import { doc, getDoc, collection, getDocs, updateDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '@/services/firebase'
 import TopBar from '@/components/layout/TopBar'
 import Badge from '@/components/ui/Badge'
@@ -41,6 +41,17 @@ export default function DetalleCliente() {
     await updateDoc(doc(db, 'clientes', id), { etiqueta })
     setCliente(prev => ({ ...prev, etiqueta }))
     toast.success('Etiqueta actualizada')
+  }
+
+  async function eliminarCliente() {
+    if (!confirm(`¿Eliminar a "${cliente.nombre}"? Esta acción no se puede deshacer.`)) return
+    try {
+      await deleteDoc(doc(db, 'clientes', id))
+      toast.success('Cliente eliminado')
+      navigate('/clientes', { replace: true })
+    } catch (_) {
+      toast.error('Error al eliminar el cliente')
+    }
   }
 
   if (loading) return <PageLoader />
@@ -142,6 +153,21 @@ export default function DetalleCliente() {
               })}
             </div>
           )}
+        </div>
+
+        {/* Zona peligrosa */}
+        <div className="border border-red-500/20 rounded-xl p-4">
+          <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3">Zona peligrosa</p>
+          <button
+            onClick={eliminarCliente}
+            className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 font-medium rounded-lg text-sm transition-colors w-full justify-center"
+          >
+            <Trash2 size={14} />
+            Eliminar cliente
+          </button>
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            Solo elimina el perfil del cliente, no sus pedidos.
+          </p>
         </div>
       </div>
     </div>

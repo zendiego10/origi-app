@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { MessageCircle, ChevronRight, AlertTriangle } from 'lucide-react'
-import { doc, getDoc, updateDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore'
+import { MessageCircle, ChevronRight, AlertTriangle, Trash2 } from 'lucide-react'
+import { doc, getDoc, updateDoc, deleteDoc, collection, getDocs, serverTimestamp, writeBatch } from 'firebase/firestore'
 import { db } from '@/services/firebase'
 import toast from 'react-hot-toast'
 import TopBar from '@/components/layout/TopBar'
@@ -63,6 +63,22 @@ export default function DetallePedido() {
       toast.success('Pedido cancelado')
     } catch (_) {
       toast.error('Error al cancelar')
+    }
+  }
+
+  async function eliminarPedido() {
+    if (!confirm(`¿Eliminar el pedido ${pedido.codigo} permanentemente? Esta acción no se puede deshacer.`)) return
+    try {
+      // Eliminar subcolección de productos primero
+      const batch = writeBatch(db)
+      const prodSnap = await getDocs(collection(db, 'pedidos', id, 'productos'))
+      prodSnap.docs.forEach(d => batch.delete(d.ref))
+      batch.delete(doc(db, 'pedidos', id))
+      await batch.commit()
+      toast.success('Pedido eliminado')
+      navigate('/pedidos', { replace: true })
+    } catch (_) {
+      toast.error('Error al eliminar el pedido')
     }
   }
 
@@ -156,7 +172,7 @@ export default function DetallePedido() {
           </div>
         </div>
 
-        {/* Acciones */}
+        {/* Acciones de estado */}
         {pedido.estado !== 'entregado' && pedido.estado !== 'cancelado' && (
           <div className="space-y-3">
             {siguienteEstado && (
@@ -172,6 +188,21 @@ export default function DetallePedido() {
             </button>
           </div>
         )}
+
+        {/* Zona peligrosa — eliminar registro */}
+        <div className="border border-red-500/20 rounded-xl p-4">
+          <p className="text-xs font-semibold text-red-400 uppercase tracking-wider mb-3">Zona peligrosa</p>
+          <button
+            onClick={eliminarPedido}
+            className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 font-medium rounded-lg text-sm transition-colors w-full justify-center"
+          >
+            <Trash2 size={14} />
+            Eliminar pedido permanentemente
+          </button>
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            Elimina el pedido y todos sus productos. Útil para limpiar datos de prueba.
+          </p>
+        </div>
       </div>
     </div>
   )
