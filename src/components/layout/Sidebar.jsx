@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   LayoutDashboard, Calculator, ShoppingBag,
-  Package, CreditCard, TrendingUp, LogOut,
+  Package, CreditCard, TrendingUp, LogOut, Users,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { to: '/inventario', icon: Package, label: 'Inventario' },
   { to: '/pagos', icon: CreditCard, label: 'Pagos' },
   { to: '/finanzas', icon: TrendingUp, label: 'Finanzas' },
+  { to: '/clientes', icon: Users, label: 'Clientes' },
 ]
 
 export default function Sidebar() {

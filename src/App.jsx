@@ -12,6 +12,8 @@ import DetallePedido from '@/pages/DetallePedido'
 import Inventario from '@/pages/Inventario'
 import Pagos from '@/pages/Pagos'
 import Finanzas from '@/pages/Finanzas'
+import Clientes from '@/pages/Clientes'
+import DetalleCliente from '@/pages/DetalleCliente'
 
 export default function App() {
   return (
@@ -47,6 +49,8 @@ export default function App() {
             <Route path="inventario" element={<Inventario />} />
             <Route path="pagos" element={<Pagos />} />
             <Route path="finanzas" element={<Finanzas />} />
+            <Route path="clientes" element={<Clientes />} />
+            <Route path="clientes/:id" element={<DetalleCliente />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
