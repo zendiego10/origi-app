@@ -70,7 +70,7 @@ export default function NuevoPedido() {
   const { fields, append, remove } = useFieldArray({ control, name: 'productos' })
   const valores = watch()
 
-  // Cargar catálogos y TRM automática
+  // Cargar catálogos y TRM
   useEffect(() => {
     async function cargar() {
       try {
@@ -81,14 +81,24 @@ export default function NuevoPedido() {
         ])
         setMarcas(marcasSnap.docs.map(d => d.data().nombre))
         setTipos(tiposSnap.docs.map(d => d.data().nombre))
-        if (!datosCalculadora) {
-          setTrm(trmResult.valor)
-        }
+        setTrm(trmResult.valor)
       } catch (_) {}
     }
     cargar()
-    return () => limpiarCalculadora()
-  }, [limpiarCalculadora])
+  }, [])
+
+  // Precargar datos de la Calculadora en el formulario
+  // Usamos useEffect + setValue en lugar de defaultValues para evitar
+  // el problema de StrictMode que borra el store antes del segundo mount
+  useEffect(() => {
+    if (!datosCalculadora) return
+    setValue('productos.0.precioUSD', datosCalculadora.precioUSD)
+    setValue('productos.0.tieneEnvioUSA', datosCalculadora.envioUSA > 0)
+    setValue('productos.0.envioUSA', datosCalculadora.envioUSA)
+    setValue('productos.0.trm', datosCalculadora.trm)
+    setValue('productos.0.envioColombia', datosCalculadora.envioColombia)
+    setValue('productos.0.elBagre', datosCalculadora.elBagre)
+  }, [datosCalculadora, setValue])
 
   // Buscar clientes
   useEffect(() => {
@@ -172,6 +182,7 @@ export default function NuevoPedido() {
         await addDoc(collection(db, 'pedidos', pedidoRef.id, 'productos'), prod)
       }
 
+      limpiarCalculadora()
       toast.success(`Pedido ${codigo} creado`)
       navigate(`/pedidos/${pedidoRef.id}`)
     } catch (err) {
