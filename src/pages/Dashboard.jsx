@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { LIST_CONTAINER, ITEM_VARIANT, CARD_TAP, CARD_HOVER } from '@/utils/animations'
 import {
   DollarSign, TrendingUp, ShoppingBag, AlertTriangle,

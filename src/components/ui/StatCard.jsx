@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
 import { CARD_TAP, CARD_HOVER } from '@/utils/animations'
 

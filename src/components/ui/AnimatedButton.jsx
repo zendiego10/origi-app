@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
 import { BUTTON_TAP, BUTTON_HOVER } from '@/utils/animations'
 import { Spinner } from './Loader'

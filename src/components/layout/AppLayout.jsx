@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
-import { PAGE_TRANSITION } from '@/utils/animations'
+import { AnimatePresence, motion } from 'motion/react'
+import { pageVariants } from '@/lib/motion'
 import Sidebar from './Sidebar'
 import BottomNav from './BottomNav'
 
@@ -12,18 +12,15 @@ export default function AppLayout() {
       <Sidebar />
 
       <main className="flex-1 min-w-0 md:ml-64 flex flex-col min-h-screen overflow-x-hidden">
-        {/*
-          mode="wait" — la salida termina antes de que entre la nueva página.
-          Esto evita que las tarjetas de ambas páginas se superpongan.
-          El exit es rápido (140ms) para que la espera se sienta mínima.
-        */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={location.pathname}
-            variants={PAGE_TRANSITION}
+            variants={pageVariants}
             initial="initial"
             animate="enter"
             exit="exit"
+            // will-change optimiza el compositing en GPU
+            style={{ willChange: 'opacity, transform, filter' }}
             className="flex-1 flex flex-col pb-16 md:pb-0 w-full"
           >
             <Outlet />

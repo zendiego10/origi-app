@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Download, TrendingUp, DollarSign, ShoppingBag, BarChart2 } from 'lucide-react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/services/firebase'

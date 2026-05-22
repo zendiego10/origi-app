@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { ChevronRight, RotateCcw, Pencil, Info, RefreshCw } from 'lucide-react'
 import TopBar from '@/components/layout/TopBar'
 import { calcularCosto, calcularGanancia } from '@/utils/calculadora'

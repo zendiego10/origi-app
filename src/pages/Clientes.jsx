@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { Search, Users, MessageCircle, ChevronRight } from 'lucide-react'
 import { collection, getDocs, query, orderBy } from 'firebase/firestore'
 import { db } from '@/services/firebase'

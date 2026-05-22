@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { LIST_CONTAINER, ITEM_VARIANT, CARD_TAP, CARD_HOVER, BUTTON_TAP } from '@/utils/animations'
 import { Plus, Search, ShoppingBag } from 'lucide-react'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
