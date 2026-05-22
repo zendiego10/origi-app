@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { motion, AnimatePresence } from 'motion/react'
 import { ChevronRight, Pencil, Info, RefreshCw } from 'lucide-react'
 import TopBar from '@/components/layout/TopBar'
@@ -14,13 +14,12 @@ export default function Calculadora() {
   const navigate = useNavigate()
   const { setDatosCalculadora } = useCalculadoraStore()
   const [envioEditando, setEnvioEditando] = useState(false)
-  const [resultado, setResultado] = useState(null)
   const [trmConfig, setTrmConfig] = useState(4200)
   const [trmFuente, setTrmFuente] = useState('')
   const [cargandoTRM, setCargandoTRM] = useState(false)
   const [precioVenta, setPrecioVenta] = useState('')
 
-  const { register, watch, setValue, reset } = useForm({
+  const { register, control, setValue } = useForm({
     defaultValues: {
       precioUSD: '',
       tieneEnvioUSA: false,
@@ -31,50 +30,57 @@ export default function Calculadora() {
     },
   })
 
-  const valores = watch()
+  // useWatch suscribe solo a los campos específicos — no crea re-renders innecesarios
+  const precioUSD     = useWatch({ control, name: 'precioUSD' })
+  const tieneEnvioUSA = useWatch({ control, name: 'tieneEnvioUSA' })
+  const envioUSA      = useWatch({ control, name: 'envioUSA' })
+  const trm           = useWatch({ control, name: 'trm' })
+  const envioColombia = useWatch({ control, name: 'envioColombia' })
+  const elBagre       = useWatch({ control, name: 'elBagre' })
 
-  // Obtener TRM automáticamente al cargar
+  // Cargar TRM — se cancela si el componente se desmonta antes de terminar
   useEffect(() => {
-    cargarTRM()
-  }, [])
-
-  async function cargarTRM() {
+    let cancelado = false
     setCargandoTRM(true)
-    try {
-      const { valor, fuente } = await obtenerTRM()
-      setTrmConfig(valor)
-      setValue('trm', valor)
-      setTrmFuente(fuente)
-    } finally {
-      setCargandoTRM(false)
-    }
-  }
-
-  // Calcular en tiempo real
-  useEffect(() => {
-    const precio = Number(valores.precioUSD)
-    if (precio > 0) {
-      const res = calcularCosto({
-        precioUSD: precio,
-        envioUSA: valores.tieneEnvioUSA ? Number(valores.envioUSA) || 0 : 0,
-        trm: Number(valores.trm) || trmConfig,
-        envioColombia: Number(valores.envioColombia) || ENVIO_COLOMBIA_DEFAULT,
-        elBagre: valores.elBagre,
+    obtenerTRM()
+      .then(({ valor, fuente }) => {
+        if (cancelado) return
+        setTrmConfig(valor)
+        setValue('trm', valor)
+        setTrmFuente(fuente)
       })
-      setResultado(res)
-    } else {
-      setResultado(null)
-    }
-  }, [valores, trmConfig])
+      .finally(() => { if (!cancelado) setCargandoTRM(false) })
+    return () => { cancelado = true }
+  }, [setValue])
+
+  // Cálculo síncrono con useMemo — sin setState, sin efectos secundarios
+  // Solo recalcula cuando cambian los valores específicos del formulario
+  const resultado = useMemo(() => {
+    const precio = Number(precioUSD)
+    if (!precio || precio <= 0) return null
+    return calcularCosto({
+      precioUSD: precio,
+      envioUSA: tieneEnvioUSA ? Number(envioUSA) || 0 : 0,
+      trm: Number(trm) || trmConfig,
+      envioColombia: Number(envioColombia) || ENVIO_COLOMBIA_DEFAULT,
+      elBagre: Boolean(elBagre),
+    })
+  }, [precioUSD, tieneEnvioUSA, envioUSA, trm, envioColombia, elBagre, trmConfig])
+
+  const gananciaInfo = useMemo(() => {
+    const venta = Number(precioVenta)
+    if (!venta || !resultado) return null
+    return calcularGanancia(venta, resultado.costoTotalCOP)
+  }, [precioVenta, resultado])
 
   function handleCrearPedido() {
     if (!resultado) return
     setDatosCalculadora({
-      precioUSD: Number(valores.precioUSD),
-      envioUSA: valores.tieneEnvioUSA ? Number(valores.envioUSA) || 0 : 0,
-      trm: Number(valores.trm),
-      envioColombia: Number(valores.envioColombia),
-      elBagre: valores.elBagre,
+      precioUSD: Number(precioUSD),
+      envioUSA: tieneEnvioUSA ? Number(envioUSA) || 0 : 0,
+      trm: Number(trm),
+      envioColombia: Number(envioColombia),
+      elBagre: Boolean(elBagre),
       costoTotalCOP: resultado.costoTotalCOP,
       precioVentaCOP: Number(precioVenta) || 0,
     })
@@ -86,7 +92,7 @@ export default function Calculadora() {
       <TopBar title="Calculadora de Costo" />
 
       <div className="flex-1 p-4 max-w-lg mx-auto w-full space-y-4 pb-6">
-        {/* Campo: Precio USD */}
+        {/* Precio USD */}
         <div className="bg-card border border-border rounded-xl p-4 space-y-3">
           <Label>Precio del producto en EE.UU. (USD)</Label>
           <div className="relative">
@@ -97,13 +103,12 @@ export default function Calculadora() {
               step="0.01"
               min="0"
               placeholder="0.00"
-              className="w-full pl-7 pr-3 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
+              className={inputCls}
             />
           </div>
 
-          {/* Taxes automáticos */}
           <AnimatePresence>
-            {Number(valores.precioUSD) > 0 && (
+            {Number(precioUSD) > 0 && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -115,25 +120,24 @@ export default function Calculadora() {
                   Taxes EE.UU. (7%)
                 </span>
                 <span className="text-yellow-400 font-medium">
-                  {formatUSD(Number(valores.precioUSD) * 0.07)}
+                  {formatUSD(Number(precioUSD) * 0.07)}
                 </span>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Envío en EE.UU. */}
+        {/* Envío EE.UU. */}
         <div className="bg-card border border-border rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <Label>¿Hubo envío en EE.UU.?</Label>
             <Toggle
-              value={valores.tieneEnvioUSA}
+              value={Boolean(tieneEnvioUSA)}
               onChange={v => setValue('tieneEnvioUSA', v)}
             />
           </div>
-
           <AnimatePresence>
-            {valores.tieneEnvioUSA && (
+            {tieneEnvioUSA && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -147,7 +151,7 @@ export default function Calculadora() {
                     step="0.01"
                     min="0"
                     placeholder="0.00"
-                    className="w-full pl-7 pr-3 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
+                    className={`${inputCls} pl-7`}
                   />
                 </div>
               </motion.div>
@@ -164,14 +168,20 @@ export default function Calculadora() {
                 <span className="text-xs text-green-400 font-medium">● Actualizada</span>
               )}
               {trmFuente === 'cache' && (
-                <span className="text-xs text-yellow-400 font-medium">● En caché</span>
+                <span className="text-xs text-yellow-400 font-medium">● Caché</span>
               )}
               <button
                 type="button"
-                onClick={cargarTRM}
+                onClick={() => {
+                  setCargandoTRM(true)
+                  obtenerTRM().then(({ valor, fuente }) => {
+                    setTrmConfig(valor)
+                    setValue('trm', valor)
+                    setTrmFuente(fuente)
+                  }).finally(() => setCargandoTRM(false))
+                }}
                 disabled={cargandoTRM}
                 className="text-muted-foreground hover:text-primary transition-colors disabled:opacity-40"
-                title="Actualizar TRM"
               >
                 <RefreshCw size={13} className={cargandoTRM ? 'animate-spin' : ''} />
               </button>
@@ -183,13 +193,13 @@ export default function Calculadora() {
               {...register('trm')}
               type="number"
               min="0"
-              className="w-full pl-7 pr-3 py-2.5 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
+              className={`${inputCls} pl-7`}
             />
           </div>
           <p className="text-xs text-muted-foreground mt-1">Editable manualmente si necesitas ajustar</p>
         </div>
 
-        {/* Envío a Colombia */}
+        {/* Envío Colombia */}
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center justify-between">
             <Label>Envío a Colombia (COP)</Label>
@@ -208,12 +218,12 @@ export default function Calculadora() {
                 {...register('envioColombia')}
                 type="number"
                 min="0"
-                className="w-full pl-7 pr-3 py-2.5 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
+                className={`${inputCls} pl-7`}
               />
             </div>
           ) : (
             <p className="text-sm font-medium text-foreground mt-1">
-              {formatCOP(Number(valores.envioColombia))}
+              {formatCOP(Number(envioColombia) || ENVIO_COLOMBIA_DEFAULT)}
             </p>
           )}
         </div>
@@ -228,7 +238,7 @@ export default function Calculadora() {
               </p>
             </div>
             <Toggle
-              value={valores.elBagre}
+              value={Boolean(elBagre)}
               onChange={v => setValue('elBagre', v)}
             />
           </div>
@@ -238,9 +248,10 @@ export default function Calculadora() {
         <AnimatePresence>
           {resultado && (
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
               className="bg-card border border-border rounded-xl p-4 space-y-2"
             >
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
@@ -248,29 +259,23 @@ export default function Calculadora() {
               </p>
 
               {resultado.desglose.map((item, i) => {
-                if (item.esTRM) {
-                  return (
-                    <div key={i} className="flex justify-between text-xs text-muted-foreground py-0.5">
-                      <span>TRM aplicada</span>
-                      <span>${item.trm?.toLocaleString('es-CO')}</span>
-                    </div>
-                  )
-                }
+                if (item.esTRM) return (
+                  <div key={i} className="flex justify-between text-xs text-muted-foreground py-0.5">
+                    <span>TRM aplicada</span>
+                    <span>${item.trm?.toLocaleString('es-CO')}</span>
+                  </div>
+                )
                 const valorMostrado = item.valorUSD !== null
                   ? formatUSD(item.valorUSD)
                   : item.valorCOP !== null
                   ? formatCOP(item.valorCOP)
                   : '—'
-
                 return (
-                  <div
-                    key={i}
-                    className={`flex justify-between text-xs py-0.5 ${
-                      item.esSubtotal
-                        ? 'text-foreground font-semibold border-t border-border pt-1.5 mt-1'
-                        : 'text-muted-foreground'
-                    }`}
-                  >
+                  <div key={i} className={`flex justify-between text-xs py-0.5 ${
+                    item.esSubtotal
+                      ? 'text-foreground font-semibold border-t border-border pt-1.5 mt-1'
+                      : 'text-muted-foreground'
+                  }`}>
                     <span>{item.label}</span>
                     <span>{valorMostrado}</span>
                   </div>
@@ -286,7 +291,7 @@ export default function Calculadora() {
                 </div>
               </div>
 
-              {/* Precio de venta + ganancia + margen */}
+              {/* Precio de venta + margen */}
               <div className="border-t border-border pt-3 mt-2 space-y-3">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Precio de venta
@@ -299,30 +304,25 @@ export default function Calculadora() {
                     value={precioVenta}
                     onChange={e => setPrecioVenta(e.target.value)}
                     placeholder="0"
-                    className="w-full pl-7 pr-3 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm"
+                    className={`${inputCls} pl-7`}
                   />
                 </div>
-                {(() => {
-                  const venta = Number(precioVenta)
-                  if (!venta || venta <= 0) return null
-                  const { gananciaCOP, margen } = calcularGanancia(venta, resultado.costoTotalCOP)
-                  return (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-secondary rounded-lg px-3 py-2.5 text-center">
-                        <p className="text-xs text-muted-foreground">Ganancia</p>
-                        <p className={`text-base font-bold mt-0.5 ${getColorMargen(margen)}`}>
-                          {formatCOP(gananciaCOP)}
-                        </p>
-                      </div>
-                      <div className="bg-secondary rounded-lg px-3 py-2.5 text-center">
-                        <p className="text-xs text-muted-foreground">Margen</p>
-                        <p className={`text-base font-bold mt-0.5 ${getColorMargen(margen)}`}>
-                          {formatPct(margen)}
-                        </p>
-                      </div>
+                {gananciaInfo && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-secondary rounded-lg px-3 py-2.5 text-center">
+                      <p className="text-xs text-muted-foreground">Ganancia</p>
+                      <p className={`text-base font-bold mt-0.5 ${getColorMargen(gananciaInfo.margen)}`}>
+                        {formatCOP(gananciaInfo.gananciaCOP)}
+                      </p>
                     </div>
-                  )
-                })()}
+                    <div className="bg-secondary rounded-lg px-3 py-2.5 text-center">
+                      <p className="text-xs text-muted-foreground">Margen</p>
+                      <p className={`text-base font-bold mt-0.5 ${getColorMargen(gananciaInfo.margen)}`}>
+                        {formatPct(gananciaInfo.margen)}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -352,6 +352,8 @@ export default function Calculadora() {
   )
 }
 
+const inputCls = 'w-full px-3 py-2.5 bg-secondary border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors text-sm'
+
 function Label({ children }) {
   return <p className="text-sm font-medium text-foreground">{children}</p>
 }
@@ -365,10 +367,10 @@ function Toggle({ value, onChange }) {
         value ? 'bg-primary' : 'bg-border'
       }`}
     >
-      <span
-        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-          value ? 'translate-x-4.5' : 'translate-x-0.5'
-        }`}
+      <motion.span
+        animate={{ x: value ? 18 : 2 }}
+        transition={{ type: 'spring', stiffness: 700, damping: 30 }}
+        className="inline-block h-3.5 w-3.5 rounded-full bg-white"
       />
     </button>
   )

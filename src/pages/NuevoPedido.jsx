@@ -5,7 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { motion, AnimatePresence } from 'motion/react'
 import { Plus, Trash2, ChevronDown, ChevronUp, Search } from 'lucide-react'
-import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore'
+import { collection, addDoc, getDocs, serverTimestamp, doc, setDoc } from 'firebase/firestore'
+import AddableSelect from '@/components/ui/AddableSelect'
 import { db } from '@/services/firebase'
 import toast from 'react-hot-toast'
 import TopBar from '@/components/layout/TopBar'
@@ -297,16 +298,32 @@ export default function NuevoPedido() {
 
                         <div className="grid grid-cols-2 gap-3">
                           <Field label="Marca">
-                            <select {...register(`productos.${idx}.marca`)} className={inputClass}>
-                              <option value="">Seleccionar</option>
-                              {marcas.map(m => <option key={m} value={m}>{m}</option>)}
-                            </select>
+                            <AddableSelect
+                              name={`productos.${idx}.marca`}
+                              register={register}
+                              setValue={setValue}
+                              items={marcas}
+                              placeholder="Seleccionar"
+                              onItemAdded={async (nombre) => {
+                                await addDoc(collection(db, 'marcas'), { nombre, creadoEn: new Date() })
+                                setMarcas(prev => [...prev, nombre].sort())
+                                toast.success(`Marca "${nombre}" agregada`)
+                              }}
+                            />
                           </Field>
-                          <Field label="Tipo">
-                            <select {...register(`productos.${idx}.tipo`)} className={inputClass}>
-                              <option value="">Seleccionar</option>
-                              {tipos.map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
+                          <Field label="Tipo de producto">
+                            <AddableSelect
+                              name={`productos.${idx}.tipo`}
+                              register={register}
+                              setValue={setValue}
+                              items={tipos}
+                              placeholder="Seleccionar"
+                              onItemAdded={async (nombre) => {
+                                await addDoc(collection(db, 'tiposProducto'), { nombre, creadoEn: new Date() })
+                                setTipos(prev => [...prev, nombre].sort())
+                                toast.success(`Tipo "${nombre}" agregado`)
+                              }}
+                            />
                           </Field>
                         </div>
 
