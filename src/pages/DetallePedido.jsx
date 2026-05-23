@@ -8,6 +8,7 @@ import toast from 'react-hot-toast'
 import TopBar from '@/components/layout/TopBar'
 import Badge from '@/components/ui/Badge'
 import { PageLoader } from '@/components/ui/Loader'
+import WhatsAppSheet from '@/components/ui/WhatsAppSheet'
 import { formatCOP, formatPct, formatDatetime, getColorMargen, diasDesde } from '@/utils/formatters'
 import { ESTADOS_PEDIDO, DIAS_ALERTA_RETRASO } from '@/utils/constants'
 
@@ -18,6 +19,7 @@ export default function DetallePedido() {
   const [productos, setProductos] = useState([])
   const [loading, setLoading] = useState(true)
   const [avanzando, setAvanzando] = useState(false)
+  const [sheetAbierto, setSheetAbierto] = useState(false)
 
   useEffect(() => {
     async function cargar() {
@@ -99,6 +101,7 @@ export default function DetallePedido() {
   const waLink = `https://wa.me/${(pedido.clienteTelefono || '').replace(/\D/g, '')}`
 
   return (
+    <>
     <div className="flex flex-col min-h-full">
       <TopBar title={pedido.codigo} backTo="/pedidos" />
 
@@ -117,12 +120,20 @@ export default function DetallePedido() {
         <div className="bg-card border border-border rounded-xl p-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-2">Cliente</p>
           <p className="font-semibold text-foreground">{pedido.clienteNombre}</p>
-          <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center justify-between mt-2 gap-2 flex-wrap">
             <p className="text-sm text-muted-foreground">{pedido.clienteTelefono}</p>
-            <a href={waLink} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/15 text-green-400 border border-green-500/20 rounded-lg text-xs font-medium hover:bg-green-500/25 transition-colors">
-              <MessageCircle size={13} /> WhatsApp
-            </a>
+            <div className="flex gap-2">
+              <a href={waLink} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/15 text-green-400 border border-green-500/20 rounded-lg text-xs font-medium hover:bg-green-500/25 transition-colors">
+                <MessageCircle size={13} /> WhatsApp
+              </a>
+              <button
+                onClick={() => setSheetAbierto(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-medium hover:bg-primary/20 transition-colors"
+              >
+                <MessageCircle size={13} /> Mensajes
+              </button>
+            </div>
           </div>
         </div>
 
@@ -205,6 +216,20 @@ export default function DetallePedido() {
         </div>
       </div>
     </div>
+
+    <WhatsAppSheet
+      open={sheetAbierto}
+      onClose={() => setSheetAbierto(false)}
+      telefono={pedido.clienteTelefono}
+      variables={{
+        nombre: pedido.clienteNombre,
+        codigo: pedido.codigo,
+        total: formatCOP(pedido.totalCOP),
+        saldo: formatCOP(pedido.saldoPendiente),
+        estado: ESTADOS_PEDIDO[pedido.estado]?.label || pedido.estado,
+      }}
+    />
+    </>
   )
 }
 

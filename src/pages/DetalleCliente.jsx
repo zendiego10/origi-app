@@ -6,6 +6,7 @@ import { db } from '@/services/firebase'
 import TopBar from '@/components/layout/TopBar'
 import Badge from '@/components/ui/Badge'
 import { PageLoader } from '@/components/ui/Loader'
+import WhatsAppSheet from '@/components/ui/WhatsAppSheet'
 import { formatCOP, formatDate } from '@/utils/formatters'
 import { ESTADOS_PEDIDO, ETIQUETAS_CLIENTE } from '@/utils/constants'
 import toast from 'react-hot-toast'
@@ -16,6 +17,7 @@ export default function DetalleCliente() {
   const [cliente, setCliente] = useState(null)
   const [pedidos, setPedidos] = useState([])
   const [loading, setLoading] = useState(true)
+  const [sheetAbierto, setSheetAbierto] = useState(false)
 
   useEffect(() => {
     async function cargar() {
@@ -71,21 +73,30 @@ export default function DetalleCliente() {
   const etiqueta = ETIQUETAS_CLIENTE[cliente.etiqueta]
 
   return (
+    <>
     <div className="flex flex-col min-h-full">
       <TopBar title={cliente.nombre} backTo="/clientes" />
 
       <div className="flex-1 p-4 max-w-2xl mx-auto w-full space-y-4 pb-8">
         {/* Info cliente */}
         <div className="bg-card border border-border rounded-xl p-4 space-y-3">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-2 flex-wrap">
             <div>
               <p className="font-bold text-foreground text-lg">{cliente.nombre}</p>
               <p className="text-sm text-muted-foreground">{cliente.telefono}</p>
             </div>
-            <a href={waLink} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/15 text-green-400 border border-green-500/20 rounded-lg text-xs font-medium hover:bg-green-500/25 transition-colors">
-              <MessageCircle size={13} /> WhatsApp
-            </a>
+            <div className="flex gap-2">
+              <a href={waLink} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/15 text-green-400 border border-green-500/20 rounded-lg text-xs font-medium hover:bg-green-500/25 transition-colors">
+                <MessageCircle size={13} /> WhatsApp
+              </a>
+              <button
+                onClick={() => setSheetAbierto(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-medium hover:bg-primary/20 transition-colors"
+              >
+                <MessageCircle size={13} /> Mensajes
+              </button>
+            </div>
           </div>
 
           {/* Etiqueta */}
@@ -173,5 +184,13 @@ export default function DetalleCliente() {
         </div>
       </div>
     </div>
+
+    <WhatsAppSheet
+      open={sheetAbierto}
+      onClose={() => setSheetAbierto(false)}
+      telefono={cliente.telefono}
+      variables={{ nombre: cliente.nombre }}
+    />
+    </>
   )
 }
