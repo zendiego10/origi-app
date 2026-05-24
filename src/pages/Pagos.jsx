@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import {
   DollarSign, AlertTriangle, CheckCircle, X,
@@ -264,7 +265,7 @@ function PanelDetallePago({ pedido, onClose, onRegistrarPago }) {
 
   const saldo = pedido?.saldoPendiente || 0
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {pedido && (
         <>
@@ -388,7 +389,7 @@ function PanelDetallePago({ pedido, onClose, onRegistrarPago }) {
             </div>
 
             {/* Pie: registrar pago */}
-            <div className="flex-shrink-0 border-t border-border p-5 space-y-3">
+            <div className="flex-shrink-0 border-t border-border px-5 pt-5 pb-8 space-y-3">
               {saldo > 0 && !mostrarFormPago && (
                 <button
                   onClick={() => setMostrarFormPago(true)}
@@ -483,6 +484,7 @@ function PanelDetallePago({ pedido, onClose, onRegistrarPago }) {
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

@@ -293,12 +293,12 @@ export default function Finanzas() {
               { label: 'Envío a Colombia',                value: datos.gastoEnvioCol,   pct: datos.inversionTotal },
               { label: 'Envío a El Bagre',                value: datos.gastoEnvioBagre, pct: datos.inversionTotal },
             ].map(({ label, value, pct }) => (
-              <div key={label} className="flex items-center justify-between px-4 py-2.5">
-                <span className="text-sm text-muted-foreground">{label}</span>
-                <div className="text-right">
+              <div key={label} className="flex items-start justify-between gap-2 px-4 py-2.5">
+                <span className="text-sm text-muted-foreground flex-1 min-w-0">{label}</span>
+                <div className="text-right flex-shrink-0">
                   <span className="text-sm font-medium text-foreground">{formatCOP(Math.max(0, value))}</span>
                   {pct > 0 && (
-                    <span className="text-xs text-muted-foreground ml-2">
+                    <span className="text-xs text-muted-foreground ml-1.5">
                       {Math.round((value / pct) * 100)}%
                     </span>
                   )}
@@ -328,9 +328,9 @@ export default function Finanzas() {
               { label: 'Total cobrado',               value: formatCOP(datos.cobrado),            color: 'text-green-400' },
               { label: 'Cartera por cobrar',          value: formatCOP(datos.carteraPendiente),   color: datos.carteraPendiente > 0 ? 'text-yellow-400' : 'text-green-400' },
             ].map(({ label, value, color }) => (
-              <div key={label} className="flex justify-between items-center px-4 py-2.5 text-sm">
-                <span className="text-muted-foreground">{label}</span>
-                <span className={`font-semibold text-foreground ${color}`}>{value}</span>
+              <div key={label} className="flex justify-between items-center gap-2 px-4 py-2.5 text-sm">
+                <span className="text-muted-foreground flex-1 min-w-0">{label}</span>
+                <span className={`font-semibold text-foreground flex-shrink-0 ${color}`}>{value}</span>
               </div>
             ))}
           </div>
@@ -345,16 +345,16 @@ export default function Finanzas() {
             <div className="divide-y divide-border">
               {datos.topMarcas.map(({ nombre, ingresos, ganancia, unidades, margen }, i) => (
                 <div key={nombre} className="px-4 py-3">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
                       />
-                      <span className="text-sm font-medium text-foreground">{nombre}</span>
-                      <span className="text-xs text-muted-foreground">× {unidades}</span>
+                      <span className="text-sm font-medium text-foreground truncate">{nombre}</span>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">× {unidades}</span>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                       <p className="text-sm font-semibold text-green-400">{formatCOP(ganancia)}</p>
                       <p className="text-xs text-muted-foreground">{formatPct(margen)} margen</p>
                     </div>
@@ -384,16 +384,16 @@ export default function Finanzas() {
             <div className="divide-y divide-border">
               {datos.topTipos.map(({ nombre, ingresos, ganancia, unidades, margen }, i) => (
                 <div key={nombre} className="px-4 py-3">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
                       />
-                      <span className="text-sm font-medium text-foreground">{nombre}</span>
-                      <span className="text-xs text-muted-foreground">× {unidades}</span>
+                      <span className="text-sm font-medium text-foreground truncate">{nombre}</span>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">× {unidades}</span>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                       <p className="text-sm font-semibold text-green-400">{formatCOP(ganancia)}</p>
                       <p className="text-xs text-muted-foreground">{formatPct(margen)} margen</p>
                     </div>

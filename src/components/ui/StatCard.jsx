@@ -42,8 +42,8 @@ export default function StatCard({ icon: Icon, label, value, sub, trend, color =
       </div>
       <div>
         <p className="text-xs text-muted-foreground font-medium">{label}</p>
-        <p className="text-xl font-bold text-foreground mt-0.5">{value}</p>
-        {sub && <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>}
+        <p className="text-base sm:text-xl font-bold text-foreground mt-0.5 break-words leading-tight">{value}</p>
+        {sub && <p className="text-xs text-muted-foreground mt-0.5 break-words">{sub}</p>}
       </div>
     </motion.div>
   )

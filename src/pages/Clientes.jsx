@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { Search, Users, MessageCircle, ChevronRight, UserPlus, X } from 'lucide-react'
@@ -208,49 +209,51 @@ export default function Clientes() {
     </div>
 
     {/* Modal nuevo cliente */}
-    <AnimatePresence>
-      {modalAbierto && (
-        <>
-          <motion.div
-            variants={backdropVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="fixed inset-0 bg-black/60 z-50"
-            onClick={() => setModalAbierto(false)}
-          />
-          <motion.div
-            initial={{ y: '100%', opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: '100%', opacity: 0 }}
-            transition={spring.smooth}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-2xl border-t border-border"
-          >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-border" />
-            </div>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
-                  <UserPlus size={14} className="text-primary" />
-                </div>
-                <p className="font-semibold text-foreground text-sm">Nuevo cliente</p>
+    {createPortal(
+      <AnimatePresence>
+        {modalAbierto && (
+          <>
+            <motion.div
+              variants={backdropVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="fixed inset-0 bg-black/60 z-50"
+              onClick={() => setModalAbierto(false)}
+            />
+            <motion.div
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={spring.smooth}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-2xl border-t border-border max-h-[85vh] flex flex-col"
+            >
+              {/* Handle */}
+              <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+                <div className="w-10 h-1 rounded-full bg-border" />
               </div>
-              <motion.button
-                onClick={() => setModalAbierto(false)}
-                whileTap={{ scale: 0.88 }}
-                transition={spring.snap}
-                className="text-muted-foreground hover:text-foreground p-1 rounded-lg transition-colors"
-              >
-                <X size={18} />
-              </motion.button>
-            </div>
 
-            {/* Formulario */}
-            <form onSubmit={guardarCliente} className="px-5 py-4 space-y-4 pb-8">
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-border flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                    <UserPlus size={14} className="text-primary" />
+                  </div>
+                  <p className="font-semibold text-foreground text-sm">Nuevo cliente</p>
+                </div>
+                <motion.button
+                  onClick={() => setModalAbierto(false)}
+                  whileTap={{ scale: 0.88 }}
+                  transition={spring.snap}
+                  className="text-muted-foreground hover:text-foreground p-1 rounded-lg transition-colors"
+                >
+                  <X size={18} />
+                </motion.button>
+              </div>
+
+              {/* Formulario */}
+              <div className="flex-1 overflow-y-auto">
+              <form onSubmit={guardarCliente} className="px-5 py-4 space-y-4 pb-10">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nombre completo</label>
                 <input
@@ -306,10 +309,13 @@ export default function Clientes() {
                 {guardando ? 'Guardando...' : 'Guardar cliente'}
               </motion.button>
             </form>
+            </div>
           </motion.div>
         </>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>,
+      document.body
+    )}
     </>
   )
 }
