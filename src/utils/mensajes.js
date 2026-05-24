@@ -21,7 +21,7 @@ export const MENSAJES = [
     titulo: 'Pedido confirmado',
     requiereCodigo: true,
     template:
-      'Hola {nombre}! 😊 Tu pedido *{codigo}* quedó registrado en Origi. Ya lo estamos tramitando. Te avisamos en cuanto tengamos novedades. Gracias por confiar en nosotros!',
+      '{nombre}! ✅ *Tu pedido {codigo} está confirmado.*\nYa lo estamos tramitando con cuidado.\n¡Gracias por confiar en Origi! 🙌',
   },
   {
     id: 'comprando_eeuu',
@@ -30,7 +30,7 @@ export const MENSAJES = [
     titulo: 'Comprando en EE.UU.',
     requiereCodigo: true,
     template:
-      'Hola {nombre}! 🛍️ Ya compramos tu pedido *{codigo}* en Estados Unidos. En los próximos 10-15 días llega a Colombia. Te mantenemos informado/a de cada novedad.',
+      '{nombre}! 🛍️ *¡Ya compramos tu pedido en EE.UU.!*\nEn 10-15 días llega a Colombia.\nTe avisamos apenas aterrice 📦',
   },
   {
     id: 'llego_colombia',
@@ -39,7 +39,7 @@ export const MENSAJES = [
     titulo: 'Llegó a Colombia',
     requiereCodigo: true,
     template:
-      'Buenas noticias {nombre}! 🇨🇴 Tu pedido *{codigo}* ya llegó a Colombia. En 1-2 días hábiles lo tendrás contigo. Estamos coordinando la entrega!',
+      '{nombre}! 🇨🇴 *¡Tu pedido {codigo} ya llegó a Colombia!*\nEn 1-2 días hábiles lo tienes en tus manos.\n¡Ya casi! 🎉',
   },
   {
     id: 'pedido_entregado',
@@ -48,7 +48,7 @@ export const MENSAJES = [
     titulo: 'Pedido entregado',
     requiereCodigo: true,
     template:
-      'Hola {nombre}! ✅ Tu pedido *{codigo}* fue entregado exitosamente. Gracias por confiar en Origi. Esperamos que lo disfrutes muchísimo! 🎉 Estamos para servirte cuando quieras.',
+      '{nombre}! 🎉 *¡Tu pedido {codigo} fue entregado!*\nEsperamos que lo disfrutes muchísimo.\n¿Quedaste contento/a? Cuéntanos 😊',
   },
   {
     id: 'pedido_cancelado',
@@ -57,7 +57,7 @@ export const MENSAJES = [
     titulo: 'Pedido cancelado',
     requiereCodigo: true,
     template:
-      'Hola {nombre}, te informamos que el pedido *{codigo}* fue cancelado. Si tienes preguntas o deseas hacer otro pedido, con mucho gusto te ayudamos. Disculpa cualquier inconveniente 🙏',
+      '{nombre}, el pedido *{codigo}* fue cancelado.\nLo sentimos. Si quieres, podemos ayudarte a encontrar otra opción 😊\nAquí estamos para lo que necesites.',
   },
 
   // ─── FIDELIZACIÓN ────────────────────────────────────────────
@@ -68,7 +68,7 @@ export const MENSAJES = [
     titulo: 'Bienvenida cliente nuevo',
     requiereCodigo: false,
     template:
-      'Hola {nombre}! 👋 Bienvenido/a a *Origi Importaciones*. Somos tu aliado para traerte lo mejor de EE.UU. a Colombia con garantía de originalidad. Que disfrutes mucho tu compra! 🎁',
+      '{nombre}! 👋 *¡Bienvenido/a a Origi Importaciones!*\nTraemos productos 100% originales de EE.UU. directo a ti 🇺🇸\n\n⚠️ *Guarda este número* — por aquí te enviamos catálogos, novedades y ofertas exclusivas antes que nadie.\n¡No te pierdas nada! 🙌',
   },
   {
     id: 'gracias_confianza',
@@ -77,7 +77,7 @@ export const MENSAJES = [
     titulo: 'Gracias por tu confianza',
     requiereCodigo: false,
     template:
-      'Hola {nombre}! 🙏 Gracias por elegirnos de nuevo. Tu confianza es lo que nos impulsa a seguir mejorando cada día. Estamos para servirte siempre con lo mejor.',
+      '{nombre}! 🌟 *Gracias por volver a elegirnos.*\nClientes como tú son los que hacen todo esto posible.\nEstamos para servirte siempre con lo mejor 🙏',
   },
   {
     id: 'satisfaccion',
@@ -86,7 +86,7 @@ export const MENSAJES = [
     titulo: 'Satisfacción post-entrega',
     requiereCodigo: false,
     template:
-      'Hola {nombre}! Esperamos que tu pedido llegó en perfectas condiciones. ¿Todo bien con tu compra? Tu opinión nos importa mucho 😊 Cualquier comentario, aquí estamos.',
+      '{nombre}! ¿Llegó bien tu pedido? 😊\n*Tu opinión nos importa* — cuéntanos cómo te fue.\nCualquier detalle, aquí estamos para resolverlo.',
   },
   {
     id: 'recomendar',
@@ -95,7 +95,7 @@ export const MENSAJES = [
     titulo: 'Invitación a recomendar',
     requiereCodigo: false,
     template:
-      'Hola {nombre}! Si quedaste contento/a con tu pedido, cuéntale a tus amigos y familia sobre *Origi*. Traemos lo mejor de EE.UU. a Colombia con garantía de originalidad. 🌟 Tu recomendación nos ayuda muchísimo!',
+      '{nombre}! Si quedaste feliz con tu compra 🌟\n*Recomiéndanos con alguien de confianza.*\nProductos originales de EE.UU., directo a Colombia — garantizados.',
   },
 
   // ─── SEGUIMIENTO Y NOVEDADES ─────────────────────────────────
@@ -106,7 +106,7 @@ export const MENSAJES = [
     titulo: 'Actualización de pedido',
     requiereCodigo: true,
     template:
-      'Hola {nombre}! 🔔 Te escribimos para darte una actualización sobre tu pedido *{codigo}*. Por el momento se encuentra en estado: *{estado}*. Cualquier novedad te avisamos de inmediato.',
+      '{nombre}! 🔔 Actualización de tu pedido *{codigo}*:\nEstado actual: *{estado}*\nCualquier novedad, te avisamos de inmediato.',
   },
   {
     id: 'demora',
@@ -115,7 +115,7 @@ export const MENSAJES = [
     titulo: 'Demora inesperada',
     requiereCodigo: true,
     template:
-      'Hola {nombre}, queremos informarte que tu pedido *{codigo}* presenta una pequeña demora. Estamos trabajando para resolverla lo antes posible. Disculpa los inconvenientes 🙏 Te avisamos en cuanto haya novedad.',
+      '{nombre}, queremos ser honestos contigo 🙏\nTu pedido *{codigo}* tiene una pequeña demora.\n*Estamos encima de esto* — te avisamos en cuanto se resuelva.',
   },
   {
     id: 'nuevos_productos',
@@ -124,7 +124,7 @@ export const MENSAJES = [
     titulo: 'Nuevos productos disponibles',
     requiereCodigo: false,
     template:
-      'Hola {nombre}! 🎁 Tenemos nuevos productos disponibles en *Origi*. Marcas originales directas de EE.UU. ¿Te interesa ver qué hay de nuevo? Con gusto te mostramos las novedades.',
+      '{nombre}! 🎁 *¡Llegaron cosas nuevas a Origi!*\nMarcas originales directo de EE.UU. — antes de que se agoten.\n¿Quieres ver qué hay? Escríbenos 👇',
   },
   {
     id: 'reactivar',
@@ -133,7 +133,7 @@ export const MENSAJES = [
     titulo: '¿Qué te gustaría pedir?',
     requiereCodigo: false,
     template:
-      'Hola {nombre}! 😊 Hace un tiempo no sabemos de ti. ¿Qué te gustaría pedir esta vez? Tenemos excelentes productos y precios. Escríbenos cuando quieras, con gusto te ayudamos.',
+      '{nombre}! 😊 Hace un tiempo no sabemos de ti.\n*¿Qué te gustaría pedir?*\nTenemos novedades que te pueden interesar — cuéntanos 🛍️',
   },
   {
     id: 'pago_recibido',
@@ -142,7 +142,7 @@ export const MENSAJES = [
     titulo: 'Pago recibido',
     requiereCodigo: true,
     template:
-      'Hola {nombre}! ✅ Confirmamos que recibimos tu pago. Queda un saldo de *{saldo}* pendiente para el pedido *{codigo}*. Gracias por estar al día con nosotros! 🙌',
+      '{nombre}! ✅ *Pago recibido, gracias.*\nQueda un saldo de *{saldo}* para el pedido *{codigo}*.\nEstamos al día. Cualquier duda, aquí estamos 🙌',
   },
 ]
 
