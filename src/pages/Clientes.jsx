@@ -1,21 +1,25 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'motion/react'
-import { Search, Users, MessageCircle, ChevronRight } from 'lucide-react'
-import { collection, getDocs, query, orderBy } from 'firebase/firestore'
+import { motion, AnimatePresence } from 'motion/react'
+import { Search, Users, MessageCircle, ChevronRight, UserPlus, X } from 'lucide-react'
+import { collection, getDocs, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/services/firebase'
 import TopBar from '@/components/layout/TopBar'
 import Badge from '@/components/ui/Badge'
-import { formatCOP, formatDate } from '@/utils/formatters'
+import { formatCOP } from '@/utils/formatters'
 import { ETIQUETAS_CLIENTE } from '@/utils/constants'
+import toast from 'react-hot-toast'
+import { spring, backdropVariants } from '@/lib/motion'
 
 export default function Clientes() {
   const navigate = useNavigate()
   const [clientes, setClientes] = useState([])
   const [pedidos, setPedidos] = useState([])
   const [loading, setLoading] = useState(true)
-  const [busqueda, setBusqueda] = useState([])
   const [busquedaText, setBusquedaText] = useState('')
+  const [modalAbierto, setModalAbierto] = useState(false)
+  const [guardando, setGuardando] = useState(false)
+  const [form, setForm] = useState({ nombre: '', telefono: '', etiqueta: 'nuevo' })
 
   useEffect(() => {
     async function cargar() {
@@ -48,15 +52,57 @@ export default function Clientes() {
     cargar()
   }, [])
 
+  function abrirModal() {
+    setForm({ nombre: '', telefono: '', etiqueta: 'nuevo' })
+    setModalAbierto(true)
+  }
+
+  async function guardarCliente(e) {
+    e.preventDefault()
+    const nombre = form.nombre.trim()
+    const telefono = form.telefono.trim()
+    if (!nombre || !telefono) return
+    setGuardando(true)
+    try {
+      const ref = await addDoc(collection(db, 'clientes'), {
+        nombre,
+        telefono,
+        etiqueta: form.etiqueta,
+        creadoEn: serverTimestamp(),
+      })
+      const nuevoCliente = { id: ref.id, nombre, telefono, etiqueta: form.etiqueta, pedidosCount: 0, totalComprado: 0, saldoTotal: 0 }
+      setClientes(prev => [nuevoCliente, ...prev])
+      setModalAbierto(false)
+      toast.success('Cliente agregado')
+    } catch (_) {
+      toast.error('Error al guardar el cliente')
+    } finally {
+      setGuardando(false)
+    }
+  }
+
   const clientesFiltrados = clientes.filter(c =>
     !busquedaText ||
     c.nombre?.toLowerCase().includes(busquedaText.toLowerCase()) ||
     c.telefono?.includes(busquedaText)
   )
 
+  const botonNuevo = (
+    <motion.button
+      onClick={abrirModal}
+      whileTap={{ scale: 0.92 }}
+      transition={spring.snap}
+      className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-[#C73652] transition-colors"
+    >
+      <UserPlus size={13} />
+      Nuevo
+    </motion.button>
+  )
+
   return (
+    <>
     <div className="flex flex-col min-h-full">
-      <TopBar title="Clientes" />
+      <TopBar title="Clientes" actions={botonNuevo} />
 
       <div className="flex-1 p-4 space-y-4">
         {/* Resumen */}
@@ -95,7 +141,7 @@ export default function Clientes() {
           <div className="flex flex-col items-center justify-center py-16">
             <Users size={40} className="text-muted-foreground opacity-30 mb-3" />
             <p className="text-muted-foreground text-sm">No hay clientes registrados</p>
-            <p className="text-xs text-muted-foreground mt-1">Los clientes se crean al hacer un pedido</p>
+            <p className="text-xs text-muted-foreground mt-1 text-center">Agrega uno con el botón "Nuevo" o créalos al hacer un pedido</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -160,5 +206,110 @@ export default function Clientes() {
         )}
       </div>
     </div>
+
+    {/* Modal nuevo cliente */}
+    <AnimatePresence>
+      {modalAbierto && (
+        <>
+          <motion.div
+            variants={backdropVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="fixed inset-0 bg-black/60 z-50"
+            onClick={() => setModalAbierto(false)}
+          />
+          <motion.div
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={spring.smooth}
+            className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-2xl border-t border-border"
+          >
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-border" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                  <UserPlus size={14} className="text-primary" />
+                </div>
+                <p className="font-semibold text-foreground text-sm">Nuevo cliente</p>
+              </div>
+              <motion.button
+                onClick={() => setModalAbierto(false)}
+                whileTap={{ scale: 0.88 }}
+                transition={spring.snap}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg transition-colors"
+              >
+                <X size={18} />
+              </motion.button>
+            </div>
+
+            {/* Formulario */}
+            <form onSubmit={guardarCliente} className="px-5 py-4 space-y-4 pb-8">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Nombre completo</label>
+                <input
+                  type="text"
+                  value={form.nombre}
+                  onChange={e => setForm(prev => ({ ...prev, nombre: e.target.value }))}
+                  placeholder="Ej. María García"
+                  required
+                  autoFocus
+                  className="w-full px-3 py-2.5 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Teléfono / WhatsApp</label>
+                <input
+                  type="tel"
+                  value={form.telefono}
+                  onChange={e => setForm(prev => ({ ...prev, telefono: e.target.value }))}
+                  placeholder="Ej. +57 300 123 4567"
+                  required
+                  className="w-full px-3 py-2.5 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Etiqueta</label>
+                <div className="flex gap-2 flex-wrap">
+                  {Object.entries(ETIQUETAS_CLIENTE).map(([key, info]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, etiqueta: key }))}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        form.etiqueta === key
+                          ? 'bg-primary text-white border-primary'
+                          : 'bg-transparent text-muted-foreground border-border hover:text-foreground'
+                      }`}
+                    >
+                      {info.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <motion.button
+                type="submit"
+                disabled={guardando || !form.nombre.trim() || !form.telefono.trim()}
+                whileTap={{ scale: 0.97 }}
+                transition={spring.snap}
+                className="w-full py-3 bg-primary hover:bg-[#C73652] disabled:opacity-50 text-white font-semibold rounded-xl transition-colors text-sm"
+              >
+                {guardando ? 'Guardando...' : 'Guardar cliente'}
+              </motion.button>
+            </form>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+    </>
   )
 }
