@@ -10,8 +10,9 @@ export function calcularCosto({
   trm = 4200,
   envioColombia = ENVIO_COLOMBIA_DEFAULT,
   elBagre = false,
+  tieneTaxes = true,
 }) {
-  const taxes = precioUSD * TAXES_USA
+  const taxes = tieneTaxes ? precioUSD * TAXES_USA : 0
   const subtotalUSD = precioUSD + taxes + Number(envioUSA)
   const subtotalCOP = subtotalUSD * trm
   const costoElBagre = elBagre ? ENVIO_EL_BAGRE : 0
@@ -20,6 +21,7 @@ export function calcularCosto({
   return {
     precioUSD: Number(precioUSD),
     taxes,
+    tieneTaxes,
     envioUSA: Number(envioUSA),
     subtotalUSD,
     trm: Number(trm),
@@ -29,7 +31,7 @@ export function calcularCosto({
     costoTotalCOP,
     desglose: [
       { label: 'Precio producto', valorUSD: Number(precioUSD), valorCOP: null },
-      { label: 'Taxes EE.UU. (7%)', valorUSD: taxes, valorCOP: null },
+      ...(tieneTaxes ? [{ label: 'Taxes EE.UU. (7%)', valorUSD: taxes, valorCOP: null }] : []),
       { label: 'Envío en EE.UU.', valorUSD: Number(envioUSA), valorCOP: null },
       { label: 'Subtotal USD', valorUSD: subtotalUSD, valorCOP: null, esSubtotal: true },
       { label: 'TRM aplicada', valorUSD: null, valorCOP: null, esTRM: true, trm: Number(trm) },

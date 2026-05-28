@@ -22,6 +22,7 @@ export default function Calculadora() {
   const { register, control, setValue } = useForm({
     defaultValues: {
       precioUSD: '',
+      tieneTaxes: true,
       tieneEnvioUSA: false,
       envioUSA: '',
       trm: 4200,
@@ -32,6 +33,7 @@ export default function Calculadora() {
 
   // useWatch suscribe solo a los campos específicos — no crea re-renders innecesarios
   const precioUSD     = useWatch({ control, name: 'precioUSD' })
+  const tieneTaxes    = useWatch({ control, name: 'tieneTaxes' })
   const tieneEnvioUSA = useWatch({ control, name: 'tieneEnvioUSA' })
   const envioUSA      = useWatch({ control, name: 'envioUSA' })
   const trm           = useWatch({ control, name: 'trm' })
@@ -64,8 +66,9 @@ export default function Calculadora() {
       trm: Number(trm) || trmConfig,
       envioColombia: Number(envioColombia) || ENVIO_COLOMBIA_DEFAULT,
       elBagre: Boolean(elBagre),
+      tieneTaxes: Boolean(tieneTaxes),
     })
-  }, [precioUSD, tieneEnvioUSA, envioUSA, trm, envioColombia, elBagre, trmConfig])
+  }, [precioUSD, tieneTaxes, tieneEnvioUSA, envioUSA, trm, envioColombia, elBagre, trmConfig])
 
   const gananciaInfo = useMemo(() => {
     const venta = Number(precioVenta)
@@ -77,6 +80,7 @@ export default function Calculadora() {
     if (!resultado) return
     setDatosCalculadora({
       precioUSD: Number(precioUSD),
+      tieneTaxes: Boolean(tieneTaxes),
       envioUSA: tieneEnvioUSA ? Number(envioUSA) || 0 : 0,
       trm: Number(trm),
       envioColombia: Number(envioColombia),
@@ -103,12 +107,23 @@ export default function Calculadora() {
               step="0.01"
               min="0"
               placeholder="0.00"
-              className={inputCls}
+              className={`${inputCls} pl-7`}
+            />
+          </div>
+
+          {/* Toggle taxes */}
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm text-muted-foreground">¿Aplica taxes EE.UU. (7%)?</span>
+            </div>
+            <Toggle
+              value={Boolean(tieneTaxes)}
+              onChange={v => setValue('tieneTaxes', v)}
             />
           </div>
 
           <AnimatePresence>
-            {Number(precioUSD) > 0 && (
+            {Number(precioUSD) > 0 && Boolean(tieneTaxes) && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}

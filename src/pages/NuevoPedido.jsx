@@ -12,7 +12,7 @@ import toast from 'react-hot-toast'
 import TopBar from '@/components/layout/TopBar'
 import { calcularCosto, calcularGanancia, calcularResumenPedido } from '@/utils/calculadora'
 import { formatCOP, formatPct, getColorMargen } from '@/utils/formatters'
-import { ENVIO_COLOMBIA_DEFAULT, TAXES_USA } from '@/utils/constants'
+import { ENVIO_COLOMBIA_DEFAULT } from '@/utils/constants'
 import { useCalculadoraStore } from '@/store/calculadoraStore'
 import { obtenerTRM } from '@/utils/trm'
 import { Spinner } from '@/components/ui/Loader'
@@ -22,6 +22,7 @@ const productoSchema = z.object({
   marca: z.string().min(1, 'Requerido'),
   tipo: z.string().min(1, 'Requerido'),
   precioUSD: z.coerce.number().positive('Debe ser > 0'),
+  tieneTaxes: z.boolean(),
   tieneEnvioUSA: z.boolean(),
   envioUSA: z.coerce.number().min(0),
   trm: z.coerce.number().positive(),
@@ -58,6 +59,7 @@ export default function NuevoPedido() {
       productos: [{
         nombre: '', marca: '', tipo: '',
         precioUSD: datosCalculadora?.precioUSD || '',
+        tieneTaxes: datosCalculadora?.tieneTaxes ?? true,
         tieneEnvioUSA: datosCalculadora ? (datosCalculadora.envioUSA > 0) : false,
         envioUSA: datosCalculadora?.envioUSA || 0,
         trm: datosCalculadora?.trm || 4200,
@@ -98,6 +100,7 @@ export default function NuevoPedido() {
   useEffect(() => {
     if (!datosCalculadora) return
     setValue('productos.0.precioUSD', datosCalculadora.precioUSD)
+    setValue('productos.0.tieneTaxes', datosCalculadora.tieneTaxes ?? true)
     setValue('productos.0.tieneEnvioUSA', datosCalculadora.envioUSA > 0)
     setValue('productos.0.envioUSA', datosCalculadora.envioUSA)
     setValue('productos.0.trm', datosCalculadora.trm)
@@ -142,11 +145,12 @@ export default function NuevoPedido() {
           trm: p.trm,
           envioColombia: p.envioColombia,
           elBagre: p.elBagre,
+          tieneTaxes: p.tieneTaxes ?? true,
         })
         const { gananciaCOP, margen } = calcularGanancia(p.precioVentaCOP, costo.costoTotalCOP)
         return {
           ...p,
-          taxes: p.precioUSD * TAXES_USA,
+          taxes: costo.taxes,
           costoTotalCOP: costo.costoTotalCOP,
           gananciaCOP,
           margenPct: margen,
@@ -259,6 +263,7 @@ export default function NuevoPedido() {
               trm: Number(p.trm) || trm,
               envioColombia: Number(p.envioColombia) || ENVIO_COLOMBIA_DEFAULT,
               elBagre: p.elBagre,
+              tieneTaxes: p.tieneTaxes ?? true,
             })
             const { gananciaCOP, margen } = calcularGanancia(Number(p.precioVentaCOP) || 0, costo.costoTotalCOP)
             const estaExpandido = expandido.includes(idx)
@@ -337,6 +342,11 @@ export default function NuevoPedido() {
                         </div>
 
                         <div className="flex items-center justify-between py-1">
+                          <span className="text-sm text-muted-foreground">¿Aplica taxes EE.UU. (7%)?</span>
+                          <input type="checkbox" {...register(`productos.${idx}.tieneTaxes`)} className="w-4 h-4 accent-primary" />
+                        </div>
+
+                        <div className="flex items-center justify-between py-1">
                           <span className="text-sm text-muted-foreground">¿Envío en EE.UU.?</span>
                           <input type="checkbox" {...register(`productos.${idx}.tieneEnvioUSA`)} className="w-4 h-4 accent-primary" />
                         </div>
@@ -407,7 +417,7 @@ export default function NuevoPedido() {
                 const newIdx = fields.length
                 append({
                   nombre: '', marca: '', tipo: '',
-                  precioUSD: '', tieneEnvioUSA: false, envioUSA: 0,
+                  precioUSD: '', tieneTaxes: true, tieneEnvioUSA: false, envioUSA: 0,
                   trm, envioColombia: ENVIO_COLOMBIA_DEFAULT, elBagre: false,
                   precioVentaCOP: '',
                 })
@@ -437,6 +447,7 @@ export default function NuevoPedido() {
                   trm: Number(p.trm) || trm,
                   envioColombia: Number(p.envioColombia) || ENVIO_COLOMBIA_DEFAULT,
                   elBagre: p.elBagre,
+                  tieneTaxes: p.tieneTaxes ?? true,
                 })
                 const { gananciaCOP } = calcularGanancia(Number(p.precioVentaCOP) || 0, c.costoTotalCOP)
                 return { costoTotalCOP: c.costoTotalCOP, precioVentaCOP: Number(p.precioVentaCOP) || 0, gananciaCOP }
